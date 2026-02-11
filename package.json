@@ -8,6 +8,7 @@
     "effect-ts-rdb": "./dist/index.js"
   },
   "scripts": {
+    "prepare": "effect-language-service patch",
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js",
     "dev": "pnpm build --watch",
     "lint": "eslint . --ext .ts"
@@ -16,6 +17,7 @@
     "effect": "^3.19.16"
   },
   "devDependencies": {
+    "@effect/language-service": "^0.73.1",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.10.13",
     "esbuild": "^0.27.3",

@@ -3,6 +3,7 @@
     "EditorConfig.EditorConfig",
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "orta.vscode-jest"
+    "orta.vscode-jest",
+    "effectful-tech.effect-vscode"
   ]
 }

@@ -10,5 +10,6 @@
   ],
   "eslint.codeActionsOnSave.rules": [
     "recommended"
-  ]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
