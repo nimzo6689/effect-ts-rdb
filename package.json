@@ -1,0 +1,30 @@
+{
+  "name": "effect-ts-rdb",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "effect-ts-rdb": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js",
+    "dev": "pnpm build --watch",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "effect": "^3.19.16"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.10.13",
+    "esbuild": "^0.27.3",
+    "esbuild-register": "^3.6.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.55.0"
+  }
+}
