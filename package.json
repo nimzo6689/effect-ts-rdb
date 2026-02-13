@@ -9,11 +9,14 @@
   },
   "scripts": {
     "prepare": "effect-language-service patch",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/index.js --packages=external",
     "dev": "pnpm build --watch",
+    "start": "node dist/index.js",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@effect/platform": "^0.94.4",
+    "@effect/platform-node": "^0.104.1",
     "effect": "^3.19.16"
   },
   "devDependencies": {
