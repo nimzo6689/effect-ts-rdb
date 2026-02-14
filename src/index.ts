@@ -10,6 +10,7 @@ import {
   Terminal,
 } from '@effect/platform';
 import { createServer } from 'node:http';
+import { prompt } from './prompt.js';
 
 class Database extends Effect.Service<Database>()('app/Database', {
   effect: Effect.gen(function* () {
@@ -21,7 +22,7 @@ class Database extends Effect.Service<Database>()('app/Database', {
   }),
 }) {}
 
-const router = HttpRouter.empty.pipe(
+const app = HttpRouter.empty.pipe(
   HttpRouter.post(
     '/',
     Effect.gen(function* () {
@@ -32,6 +33,8 @@ const router = HttpRouter.empty.pipe(
       return HttpServerResponse.text(result);
     }),
   ),
+  HttpServer.serve(),
+  HttpServer.withLogAddress,
 );
 
 const showTitle = Effect.gen(function* () {
@@ -49,8 +52,7 @@ const client = Effect.gen(function* () {
 
   return yield* Effect.forever(
     Effect.gen(function* () {
-      yield* terminal.display('>> ');
-      const q = yield* terminal.readLine;
+      const q = yield* prompt('>> ');
 
       if (q.trim() === '') return;
 
@@ -66,14 +68,19 @@ const client = Effect.gen(function* () {
   );
 });
 
-const app = router.pipe(HttpServer.serve(), HttpServer.withLogAddress);
-const ServerLive = NodeHttpServer.layer(() => createServer(), { port: 32198 });
-
 const main = Effect.gen(function* () {
   const args = process.argv.slice(2);
 
   if (args.includes('--server')) {
-    return yield* Layer.launch(Layer.provide(app, Layer.merge(ServerLive, Database.Default)));
+    return yield* Layer.launch(
+      Layer.provide(
+        app,
+        Layer.merge(
+          NodeHttpServer.layer(() => createServer(), { port: 32198 }),
+          Database.Default,
+        ),
+      ),
+    );
   } else {
     return yield* client;
   }
