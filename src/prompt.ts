@@ -48,10 +48,6 @@ export const prompt = (promptText: string): Effect.Effect<string, never, never> 
           };
 
           stdin.on('data', onData);
-
-          return Effect.sync(() => {
-            stdin.removeListener('data', onData);
-          });
         }),
       (stdin) =>
         Effect.sync(() => {

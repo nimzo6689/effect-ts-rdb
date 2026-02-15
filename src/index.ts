@@ -12,6 +12,8 @@ import {
 import { createServer } from 'node:http';
 import { prompt } from './prompt.js';
 
+const HttpServerPort = 32198;
+
 class Database extends Effect.Service<Database>()('app/Database', {
   effect: Effect.gen(function* () {
     yield* Console.log('Database initialized.');
@@ -22,14 +24,14 @@ class Database extends Effect.Service<Database>()('app/Database', {
   }),
 }) {}
 
-const app = HttpRouter.empty.pipe(
+const server = HttpRouter.empty.pipe(
   HttpRouter.post(
     '/',
     Effect.gen(function* () {
       const request = yield* HttpServerRequest.HttpServerRequest;
-      const query = yield* request.text;
+      const sql = yield* request.text;
       const db = yield* Database;
-      const result = yield* db.execute(query);
+      const result = yield* db.execute(sql);
       return HttpServerResponse.text(result);
     }),
   ),
@@ -37,27 +39,24 @@ const app = HttpRouter.empty.pipe(
   HttpServer.withLogAddress,
 );
 
-const showTitle = Effect.gen(function* () {
-  const terminal = yield* Terminal.Terminal;
-  yield* terminal.display(
-    'effect-ts-rdb: An RDB implementation written in Effect-TS for learning purposes.\n',
-  );
-});
-
 const client = Effect.gen(function* () {
   const terminal = yield* Terminal.Terminal;
   const httpClient = yield* HttpClient.HttpClient;
 
-  yield* showTitle;
+  yield* terminal.display(
+    'effect-ts-rdb: An RDB implementation written in Effect-TS for learning purposes.\n',
+  );
 
   return yield* Effect.forever(
     Effect.gen(function* () {
-      const q = yield* prompt('>> ');
+      const sql = yield* prompt('>> ');
 
-      if (q.trim() === '') return;
+      if (sql.trim() === '') return;
 
-      const responseText = yield* HttpClientRequest.post('http://localhost:32198/').pipe(
-        HttpClientRequest.bodyText(q),
+      const responseText = yield* HttpClientRequest.post(
+        `http://localhost:${HttpServerPort}/`,
+      ).pipe(
+        HttpClientRequest.bodyText(sql),
         httpClient.execute,
         Effect.flatMap((res) => res.text),
         Effect.catchAll((err) => Effect.succeed(`Error: ${err}`)),
@@ -74,18 +73,18 @@ const main = Effect.gen(function* () {
   if (args.includes('--server')) {
     return yield* Layer.launch(
       Layer.provide(
-        app,
+        server,
         Layer.merge(
-          NodeHttpServer.layer(() => createServer(), { port: 32198 }),
+          NodeHttpServer.layer(() => createServer(), { port: HttpServerPort }),
           Database.Default,
         ),
       ),
     );
   } else {
-    return yield* client;
+    return yield* client.pipe(
+      Effect.provide(Layer.mergeAll(NodeTerminal.layer, NodeHttpClient.layerUndici)),
+    );
   }
 });
 
-NodeRuntime.runMain(
-  main.pipe(Effect.provide(Layer.mergeAll(NodeTerminal.layer, NodeHttpClient.layerUndici))),
-);
+NodeRuntime.runMain(main);
